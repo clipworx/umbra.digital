@@ -19,8 +19,7 @@ const TicTacToe: React.FC<TicTacToeProps> = ({ player1, player2 }) => {
   const [roundEnded, setRoundEnded] = useState(false);
   const [xScore, setXScore] = useState(0);
   const [oScore, setOScore] = useState(0);
-  const [finalWinner, setFinalWinner] = useState<string>(null);
-  
+
   useEffect(() => {
     if (!gameStarted || winner) return;
 

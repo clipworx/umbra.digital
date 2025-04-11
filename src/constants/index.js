@@ -1,6 +1,3 @@
-
-import { lazy } from "react";
-
 import tictactoe from "../pages/TicTacToe";
 
 const config = {

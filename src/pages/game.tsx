@@ -7,7 +7,8 @@ const TicTacToe = dynamic(() => import("../pages/TicTacToe"), {
 
 const GamePage = () => {
   const router = useRouter();
-  const { player1, player2 } = router.query;
+  const { player1, player2 } = router.query as { player1: string; player2: string };
+
 
   if (!player1 || !player2) {
     return (

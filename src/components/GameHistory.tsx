@@ -20,7 +20,7 @@ const GameHistory = () => {
     const fetchGames = async () => {
       try {
         const response = await fetch(
-          `http://localhost:5000/api/games/retrieve?page=${page}&limit=${limit}`
+          `${process.env.NEXT_PUBLIC_API_URL}/api/games/retrieve?page=${page}&limit=${limit}`
         );
         const result = await response.json();
         setGames(result.data);
