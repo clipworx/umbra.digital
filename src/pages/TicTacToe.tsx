@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
+
 type TicTacToeProps = {
   player1: string;
   player2: string;
@@ -9,7 +10,7 @@ const TicTacToe: React.FC<TicTacToeProps> = ({ player1, player2 }) => {
   const router = useRouter();
 
   const [board, setBoard] = useState(Array(9).fill(null));
-  const [isXNext, setIsXNext] = useState(true); 
+  const [isXNext, setIsXNext] = useState(false);  // Keep this as is, since X will still be the second player
   const [winner, setWinner] = useState<string | null>(null);
   const [timeLeft, setTimeLeft] = useState(15);
   const [gameStarted, setGameStarted] = useState(true); 
@@ -18,8 +19,8 @@ const TicTacToe: React.FC<TicTacToeProps> = ({ player1, player2 }) => {
   const [roundEnded, setRoundEnded] = useState(false);
   const [xScore, setXScore] = useState(0);
   const [oScore, setOScore] = useState(0);
-
-  // Timer for the game
+  const [finalWinner, setFinalWinner] = useState<string>(null);
+  
   useEffect(() => {
     if (!gameStarted || winner) return;
 
@@ -41,7 +42,7 @@ const TicTacToe: React.FC<TicTacToeProps> = ({ player1, player2 }) => {
     if (!gameStarted || board[index] || winner) return;
   
     const newBoard = [...board];
-    const currentPlayer = isXNext ? "X" : "O";
+    const currentPlayer = isXNext ? "X" : "O";  // This logic stays the same
     const currentMoves = isXNext ? [...xMoves] : [...oMoves];
   
     if (currentMoves.length === 3) {
@@ -92,7 +93,7 @@ const TicTacToe: React.FC<TicTacToeProps> = ({ player1, player2 }) => {
   const handleReset = () => {
     setBoard(Array(9).fill(null));
     setWinner(null);
-    setIsXNext(true);
+    setIsXNext(false);
     setTimeLeft(15);
     setXMoves([]);
     setOMoves([]);
@@ -101,7 +102,7 @@ const TicTacToe: React.FC<TicTacToeProps> = ({ player1, player2 }) => {
   const handleContinueRound = () => {
     setBoard(Array(9).fill(null));
     setWinner(null);
-    setIsXNext(true);
+    setIsXNext(false);
     setTimeLeft(15);
     setXMoves([]);
     setOMoves([]);
@@ -109,9 +110,46 @@ const TicTacToe: React.FC<TicTacToeProps> = ({ player1, player2 }) => {
   };
   
   const handleStopGame = () => {
+    saveGameResult();
     setXScore(0);
     setOScore(0);
-    router.push("/"); // Goes back to home page
+    router.push("/");
+  };
+
+
+  const saveGameResult = async () => {
+    try {
+      let winnerName: string;
+      switch (true) {
+        case xScore > oScore:
+          winnerName = player2; 
+          break;
+        case oScore > xScore:
+          winnerName = player1; 
+          break;
+        default:
+          winnerName = "DRAW";
+          break;
+      }
+
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/games/create`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          player1,
+          player2,
+          winner: winnerName,
+          board,
+          player1_score: oScore,
+          player2_score: xScore,
+          date: new Date(),
+        }),
+      });
+    } catch (error) {
+      console.error("Error saving game result:", error);
+    }
   };
 
   return (
@@ -122,21 +160,21 @@ const TicTacToe: React.FC<TicTacToeProps> = ({ player1, player2 }) => {
         <>
         
         <div className="flex justify-between w-full max-w-md mb-6">
-          <div className={`text-left ${isXNext ? "font-bold text-red-400" : "text-white"}`}>
+          <div className={`text-left ${!isXNext ? "font-bold text-blue-400" : "text-white"}`}>
             <p className="text-lg">Player 1</p>
-            <p className="text-xl">{player1} <span className="text-red-500">(X)</span></p>
+            <p className="text-xl">{player1} <span className="text-blue-500">(O)</span></p>
           </div>
-          <div className={`text-right ${!isXNext ? "font-bold text-blue-400" : "text-white"}`}>
+          <div className={`text-right ${isXNext ? "font-bold text-red-400" : "text-white"}`}>
             <p className="text-lg">Player 2</p>
-            <p className="text-xl">{player2} <span className="text-blue-500">(O)</span></p>
+            <p className="text-xl">{player2} <span className="text-red-500">(X)</span></p> 
           </div>
         </div>
         <div className="text-xl mb-4 flex justify-between w-full max-w-md">
           <p>
-            <span className="text-red-400">{player1}</span>: {xScore}
+            <span className="text-blue-400">{player1}</span>: {oScore}
           </p>
           <p>
-            <span className="text-blue-400">{player2}</span>: {oScore}
+            <span className="text-red-400">{player2}</span>: {xScore}
           </p>
         </div>
           <div className="text-2xl mb-4">
@@ -144,7 +182,7 @@ const TicTacToe: React.FC<TicTacToeProps> = ({ player1, player2 }) => {
           </div>
 
           <p className="text-xl mb-4">
-            Turn: <span style={{ color: isXNext ? "red" : "blue" }}>{isXNext ? "X" : "O"}</span>
+            Turn: <span style={{ color: isXNext ? "red" : "blue" }}>{isXNext ? player2 : player1} ({isXNext ? "X" : "O"})</span>
           </p>
 
           <div className="grid grid-cols-3 gap-0">
