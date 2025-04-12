@@ -26,8 +26,19 @@ const TicTacToe: React.FC<TicTacToeProps> = ({ player1, player2 }) => {
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 0) {
-          setWinner(isXNext ? "O" : "X"); 
+          const winningPlayer = isXNext ? "O" : "X";
+          
+          setWinner(winningPlayer); 
           setRoundEnded(true);
+
+          if (!roundEnded) {
+            if (winningPlayer === "X") {
+              setXScore((prevScore) => prevScore + 1);
+            } else {
+              setOScore((prevScore) => prevScore + 1);
+            }
+          }
+
           return 0;
         }
         return prev - 0.1;
